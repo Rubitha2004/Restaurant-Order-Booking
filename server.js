@@ -14,7 +14,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean)
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true)
 
@@ -27,8 +27,17 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}))
-app.options('*', cors())
+}
+
+const corsMiddleware = cors(corsOptions)
+app.use(corsMiddleware)
+
+// Avoid using app.options with '*' which can break path-to-regexp in some Express versions.
+// Instead, call the CORS middleware explicitly for preflight requests.
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return corsMiddleware(req, res, next)
+  next()
+})
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 

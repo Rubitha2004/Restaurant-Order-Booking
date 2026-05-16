@@ -60,7 +60,11 @@ app.use((err, req, res, next) => {
     message: err.message || 'Server error',
   })
 })
-
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.message)
+  console.error('FILE:', err.stack)
+  process.exit(1)
+})
 const PORT = process.env.PORT || 5000
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`)
